@@ -8,8 +8,11 @@ pub fn init() {
     // fs::create_dir_all(format!("{}/objects", GIT_DIR)).unwrap();
 }
 
-pub fn hash_object(data: &[u8]) -> String {
-    let type_ = "blob";
+pub fn hash_object(data: &[u8], type_: Option<&str>) -> String {
+    let type_ = match type_ {
+        Some(t) => t,
+        None => "blob",
+    };
     let obj = [type_.as_bytes(), b"\x00", data].concat();
     let oid = Sha1::digest(&obj);
     let oid_hex = format!("{:x}", oid);
@@ -27,8 +30,9 @@ pub fn get_object(oid: &str, expected: Option<&str>) -> String {
     //从b"\x00"分割
     let mut parts = data.splitn(2, |&x| x == 0);
     let type_ = std::str::from_utf8(&parts.next().unwrap()).unwrap();
-    if let Some(exp) = expected {
-        assert_eq!(type_, exp, "Expected {}, got {}", exp, type_);
+    match expected {
+        Some(expected) => assert_eq!(expected, type_, "Expected {}, got {}", expected, type_),
+        None => assert_eq!("blob", type_, "Expected blob, got {}", type_),
     }
     std::str::from_utf8(&parts.next().unwrap())
         .unwrap()

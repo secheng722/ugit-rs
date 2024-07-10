@@ -37,11 +37,10 @@ pub fn init() {
 
 fn hash_object(args: &str) {
     let data = std::fs::read(args).unwrap();
-    let oid = data::hash_object(&data);
+    let oid = data::hash_object(&data, None);
     println!("{}", oid);
 }
 
 fn cat_file(args: &str) {
-    let type_ = Option::Some("blob");
-    println!("{}", data::get_object(args,type_));
+    println!("{}", data::get_object(args, None));
 }
