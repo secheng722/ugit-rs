@@ -6,7 +6,6 @@ pub fn write_tree(directory: Option<&str>) {
     std::fs::read_dir(directory).unwrap().for_each(|entry| {
         let entry = entry.unwrap();
         let path = entry.path();
-        let path_str = path.to_str().unwrap();
         // 不跟随符号链接
         let metadata = std::fs::symlink_metadata(&path).unwrap();
         if metadata.is_file() {
