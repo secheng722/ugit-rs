@@ -31,4 +31,5 @@ cargo new ugit
 
 ## 第8-n节
 
+- git commit信息即为标题 简单的合并到一起了
 

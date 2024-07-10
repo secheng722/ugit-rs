@@ -33,7 +33,7 @@ pub fn init(args: &str) {
 }
 
 fn write_tree(args: &str) {
-    base::write_tree(None);
+    println!("{}",base::write_tree(None));
 }
 
 fn hash_object(args: &str) {
