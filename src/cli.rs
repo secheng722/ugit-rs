@@ -1,8 +1,4 @@
-/*
-cli.rs
-*/
-
-use crate::data;
+use crate::{base, data};
 
 pub fn parse_args() {
     let args: Vec<String> = std::env::args().collect();
@@ -12,7 +8,7 @@ pub fn parse_args() {
     }
     let command = &args[1];
     match command.as_str() {
-        "init" => init(),
+        "init" => init(&args[1]),
         "hash-object" | "cat-file" => {
             if args.len() < 3 {
                 eprintln!("uGit: not enough arguments");
@@ -24,6 +20,7 @@ pub fn parse_args() {
                 _ => unreachable!(), // 已经在上面的匹配中检查了命令
             }
         }
+        "write-tree" => write_tree(&args[1]),
         _ => {
             eprintln!("uGit: invalid command {}", command);
             std::process::exit(1);
@@ -31,8 +28,12 @@ pub fn parse_args() {
     }
 }
 
-pub fn init() {
+pub fn init(args: &str) {
     data::init();
+}
+
+fn write_tree(args: &str) {
+    base::write_tree(None);
 }
 
 fn hash_object(args: &str) {
