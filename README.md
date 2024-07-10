@@ -6,7 +6,7 @@
 
 ## 第1-6节
 
-### 第一节简单概括创建项目
+### 第一节 创建项目
 
 ```bash
 cargo new ugit
@@ -20,4 +20,12 @@ cargo new ugit
 
 - 在rust中主要是用clap这个库来 但这几节里还不需要那么复杂，
   于是我就只用了rust中std::env::args().collect()
-  
+
+- 主要是用Option 替代了默认参数的效果 感觉这里值得一提
+
+### 第七节 Add base module 添加基础模块
+
+- 这里直接添加
+
+### 第八节 write-tree: List files write-tree：列出文件
+

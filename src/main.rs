@@ -1,4 +1,4 @@
-use mini_git::cli;
+use u_git::cli;
 
 fn main() {
     // cli::parse_args();

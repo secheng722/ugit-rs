@@ -1,5 +1,5 @@
 [package]
-name = "mini-git"
+name = "u-git"
 version = "0.1.0"
 edition = "2021"
 
