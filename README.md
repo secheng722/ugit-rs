@@ -29,10 +29,6 @@ cargo new ugit
 
 - 这里直接添加
 
-## 第八节 write-tree: List files write-tree：列出文件
+## 第8-n节
 
-[08](https://github.com/secheng722/ugit-rs/tree/08)
 
-- 这里直接翻译代码
-
-## 第九节 write-tree: Ignore .ugit files 忽略 .ugit 文件

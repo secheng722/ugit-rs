@@ -1,3 +1,5 @@
+use crate::data;
+
 pub fn write_tree(directory: Option<&str>) {
     let directory = match directory {
         Some(d) => d,
@@ -8,12 +10,21 @@ pub fn write_tree(directory: Option<&str>) {
         let path = entry.path();
         // 不跟随符号链接
         let metadata = std::fs::symlink_metadata(&path).unwrap();
+        let path_str = path.to_str().unwrap();
+        if is_ignored(path_str) {
+            return;
+        }
         if metadata.is_file() {
-            // TODO: write the file to object store
-            println!("file: {}", path.to_str().unwrap());
+            let data = std::fs::read(path).unwrap();
+            let oid: String = data::hash_object(&data, None);
+            println!("{}", oid);
         } else if metadata.is_dir() {
-            write_tree(path.to_str());
+            write_tree(Some(path_str));
         }
         // TODO: actually create the tree object
     });
+}
+
+fn is_ignored(path: &str) -> bool {
+    path.split("/").any(|item| item.eq(".ugit"))
 }

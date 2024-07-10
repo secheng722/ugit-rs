@@ -38,7 +38,7 @@ fn write_tree(args: &str) {
 
 fn hash_object(args: &str) {
     let data = std::fs::read(args).unwrap();
-    let oid = data::hash_object(&data, None);
+    let oid: String = data::hash_object(&data, None);
     println!("{}", oid);
 }
 
