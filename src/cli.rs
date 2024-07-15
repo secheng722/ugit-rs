@@ -22,6 +22,7 @@ pub fn parse_args() {
         }
         "write-tree" => write_tree(&args[2]),
         "read-tree" => read_tree(&args[2]),
+        "commit" => commit(&args[2]),
         _ => {
             eprintln!("uGit: invalid command {}", command);
             std::process::exit(1);
@@ -49,4 +50,9 @@ fn hash_object(args: &str) {
 
 fn cat_file(args: &str) {
     println!("{}", data::get_object(args, None));
+}
+
+fn commit(args: &str) {
+    let oid = base::commmit(args);
+    println!("{}", oid);
 }

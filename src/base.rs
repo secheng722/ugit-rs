@@ -130,3 +130,9 @@ fn empty_current_directory() {
         }
     });
 }
+
+pub(crate) fn commmit(message: &str) -> String {
+    let commit = format!("tree {}\n{}", write_tree(Some("./test")), message);
+    let oid = data::hash_object(commit.as_bytes(), Some("commit"));
+    return oid;
+}
