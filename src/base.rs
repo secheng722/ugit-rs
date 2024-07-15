@@ -1,3 +1,5 @@
+use std::fmt::format;
+
 use crate::data;
 
 pub fn write_tree(directory: Option<&str>) -> String {
@@ -29,11 +31,16 @@ pub fn write_tree(directory: Option<&str>) -> String {
 }
 
 fn is_ignored(path: &str) -> bool {
-    let ignore_file = [".ugit","u-git"];
+    let ignore_file = [".ugit", "u-git","target",".vscode"];
     path.split("/").any(|item| ignore_file.contains(&item))
 }
 
-fn process_entry(path: &std::path::Path, metadata: &std::fs::Metadata) -> (String, String, std::ffi::OsString) {
+
+
+fn process_entry(
+    path: &std::path::Path,
+    metadata: &std::fs::Metadata,
+) -> (String, String, std::ffi::OsString) {
     let path_str = path.to_str().unwrap();
     if metadata.is_file() {
         let type_ = "blob".to_string(); // 将类型改为String
@@ -47,4 +54,62 @@ fn process_entry(path: &std::path::Path, metadata: &std::fs::Metadata) -> (Strin
     } else {
         panic!("Unsupported file type");
     }
+}
+
+fn iter_tree_entries(oid: Option<&str>) -> impl Iterator<Item = (String, String, String)> {
+    match oid {
+        Some(oid) => {
+            let tree = data::get_object(oid, Some("tree"));
+            tree.lines()
+                .map(|entry| {
+                    let parts: Vec<&str> = entry.splitn(3, ' ').collect();
+                    if parts.len() == 3 {
+                        (
+                            parts[0].to_string(),
+                            parts[1].to_string(),
+                            parts[2].to_string(),
+                        )
+                    } else {
+                        panic!("Invalid tree entry format")
+                    }
+                })
+                .collect::<Vec<_>>()
+                .into_iter()
+        }
+        None => Vec::new().into_iter(),
+    }
+}
+
+pub(crate) fn get_tree(
+    oid: Option<&str>,
+    base_path: Option<&str>,
+) -> std::collections::HashMap<String, String> {
+    let base_path = match base_path {
+        Some(p) => p,
+        None => "",
+    };
+    let mut map = std::collections::HashMap::new();
+    iter_tree_entries(oid).for_each(|(type_, oid, name)| {
+        assert_eq!(name.contains('/'), false);
+        assert_eq!(name != ".." && name != ".", true);
+        let path = format!("{}/{}", base_path, name);
+        if type_ == "blob" {
+            map.insert(path, oid);
+        } else if type_ == "tree" {
+            let sub_tree = get_tree(Some(&oid), Some(&format!("{}/", path)));
+            map.extend(sub_tree);
+        } else {
+            panic!("Invalid tree entry")
+        }
+    });
+    return map;
+}
+
+pub(crate) fn read_tree(tree_oid: Option<&str>) {
+    get_tree(tree_oid, Some("./test"))
+        .iter()
+        .for_each(|(path, oid)| {
+            let data = data::get_object(oid, Some("blob"));
+            std::fs::write(path, data).unwrap();
+        })
 }

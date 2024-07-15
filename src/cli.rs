@@ -20,7 +20,8 @@ pub fn parse_args() {
                 _ => unreachable!(), // 已经在上面的匹配中检查了命令
             }
         }
-        "write-tree" => write_tree(&args[1]),
+        "write-tree" => write_tree(&args[2]),
+        "read-tree" => read_tree(&args[2]),
         _ => {
             eprintln!("uGit: invalid command {}", command);
             std::process::exit(1);
@@ -33,7 +34,11 @@ pub fn init(args: &str) {
 }
 
 fn write_tree(args: &str) {
-    println!("{}",base::write_tree(None));
+    println!("{}", base::write_tree(Some(args)));
+}
+
+fn read_tree(args: &str) {
+    base::read_tree(Some(args));
 }
 
 fn hash_object(args: &str) {
