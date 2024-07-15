@@ -1,4 +1,4 @@
-use std::fmt::format;
+use std::{fmt::format, fs::read};
 
 use crate::data;
 
@@ -31,12 +31,11 @@ pub fn write_tree(directory: Option<&str>) -> String {
 }
 
 fn is_ignored(path: &str) -> bool {
-    let ignore_file = [".ugit", "u-git","target",".vscode"];
+    let ignore_file = [".ugit", "u-git", "target", ".vscode"];
     path.split("/").any(|item| ignore_file.contains(&item))
 }
 
-
-
+//处理文件
 fn process_entry(
     path: &std::path::Path,
     metadata: &std::fs::Metadata,
@@ -106,10 +105,28 @@ pub(crate) fn get_tree(
 }
 
 pub(crate) fn read_tree(tree_oid: Option<&str>) {
+    empty_current_directory();
     get_tree(tree_oid, Some("./test"))
         .iter()
         .for_each(|(path, oid)| {
             let data = data::get_object(oid, Some("blob"));
             std::fs::write(path, data).unwrap();
         })
+}
+
+fn empty_current_directory() {
+    let entries = std::fs::read_dir("./test").unwrap();
+    entries.for_each(|entry| {
+        let entry = entry.unwrap();
+        let path = entry.path();
+        let path_str = path.to_str().unwrap();
+        if is_ignored(path_str) {
+            return;
+        }
+        if path.is_dir() {
+            std::fs::remove_dir_all(path).unwrap();
+        } else {
+            std::fs::remove_file(path).unwrap();
+        }
+    });
 }
