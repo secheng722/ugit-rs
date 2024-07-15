@@ -7,6 +7,10 @@ pub fn init() {
     fs::create_dir(GIT_DIR).unwrap();
     // fs::create_dir_all(format!("{}/objects", GIT_DIR)).unwrap();
 }
+pub fn set_head(oid:&str){
+    let path = format!("{}/HEAD", GIT_DIR);
+    fs::write(path,oid).unwrap();
+}
 
 pub fn hash_object(data: &[u8], type_: Option<&str>) -> String {
     let type_ = match type_ {
