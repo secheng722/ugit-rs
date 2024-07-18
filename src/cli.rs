@@ -23,7 +23,13 @@ pub fn parse_args() {
         "write-tree" => write_tree(&args[2]),
         "read-tree" => read_tree(&args[2]),
         "commit" => commit(&args[2]),
-        "log" => log(&args[1]).unwrap(),
+        "log" => {
+            if args.len() < 3 {
+                log(None).unwrap()
+            } else {
+                log(Some(&args[2])).unwrap()
+            }
+        }
         _ => {
             eprintln!("uGit: invalid command {}", command);
             std::process::exit(1);
@@ -32,7 +38,7 @@ pub fn parse_args() {
 }
 
 pub fn init(args: &str) {
-    data::init();
+    let _ = data::init();
 }
 
 fn write_tree(args: &str) {
@@ -64,10 +70,10 @@ fn commit(args: &str) {
     println!("{}", oid.unwrap());
 }
 
-fn log(args: &str) -> Result<(),Box<dyn std::error::Error>>{
-
-    let oid = data::get_head()?;
-    println!("oid: {}",oid);
+fn log(args: Option<&str>) -> Result<(), Box<dyn std::error::Error>> {
+    let binding = data::get_head()?;
+    let oid = args.or(Some(&binding)).ok_or("oid is null")?;
+    println!("oid: {}", oid);
     let commit = base::get_commit(&oid)?;
     println!("{:?}", commit);
     Ok(())
