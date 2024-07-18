@@ -23,6 +23,7 @@ pub fn parse_args() {
         "write-tree" => write_tree(&args[2]),
         "read-tree" => read_tree(&args[2]),
         "commit" => commit(&args[2]),
+        "log" => log(&args[1]).unwrap(),
         _ => {
             eprintln!("uGit: invalid command {}", command);
             std::process::exit(1);
@@ -35,7 +36,7 @@ pub fn init(args: &str) {
 }
 
 fn write_tree(args: &str) {
-    println!("{}", base::write_tree(Some(args)));
+    println!("{}", base::write_tree(Some(args)).unwrap());
 }
 
 fn read_tree(args: &str) {
@@ -44,15 +45,30 @@ fn read_tree(args: &str) {
 
 fn hash_object(args: &str) {
     let data = std::fs::read(args).unwrap();
-    let oid: String = data::hash_object(&data, None);
-    println!("{}", oid);
+    match data::hash_object(&data, None) {
+        Ok(oid) => println!("{}", oid),
+        Err(e) => eprintln!("{}", e),
+    };
 }
 
 fn cat_file(args: &str) {
-    println!("{}", data::get_object(args, None));
+    // println!("{}", data::get_object(args, None));
+    match data::get_object(args, None) {
+        Ok(oid) => println!("{}", oid),
+        Err(e) => eprintln!("{}", e),
+    }
 }
 
 fn commit(args: &str) {
     let oid = base::commmit(args);
-    println!("{}", oid);
+    println!("{}", oid.unwrap());
+}
+
+fn log(args: &str) -> Result<(),Box<dyn std::error::Error>>{
+
+    let oid = data::get_head()?;
+    println!("oid: {}",oid);
+    let commit = base::get_commit(&oid)?;
+    println!("{:?}", commit);
+    Ok(())
 }
