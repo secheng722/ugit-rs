@@ -123,7 +123,7 @@ pub(crate) fn read_tree(tree_oid: Option<&str>) {
             if let Ok(data) = data::get_object(oid, Some("blob")) {
                 std::fs::write(path, data).unwrap();
             }
-        })
+        });
 }
 
 fn empty_current_directory() {
@@ -153,6 +153,13 @@ pub(crate) fn commmit(message: &str) -> Result<String, Box<dyn Error>> {
     let oid = data::hash_object(commit.as_bytes(), Some("commit"))?;
     data::set_head(&oid)?;
     return Ok(oid);
+}
+
+pub(crate) fn checkout(oid: &str) -> Result<(), Box<dyn Error>> {
+    let commit = get_commit(oid)?;
+    read_tree(Some(&commit.tree));
+    let _ = data::set_head(oid);
+    Ok(())
 }
 
 #[derive(Debug)]

@@ -9,20 +9,12 @@ pub fn parse_args() {
     let command = &args[1];
     match command.as_str() {
         "init" => init(&args[1]),
-        "hash-object" | "cat-file" => {
-            if args.len() < 3 {
-                eprintln!("uGit: not enough arguments");
-                std::process::exit(1);
-            }
-            match command.as_str() {
-                "hash-object" => hash_object(&args[2]),
-                "cat-file" => cat_file(&args[2]),
-                _ => unreachable!(), // 已经在上面的匹配中检查了命令
-            }
-        }
+        "hash-object" => hash_object(&args[2]),
+        "cat-file" => cat_file(&args[2]),
         "write-tree" => write_tree(&args[2]),
         "read-tree" => read_tree(&args[2]),
         "commit" => commit(&args[2]),
+        "checkout" => checkout(&args[2]),
         "log" => {
             if args.len() < 3 {
                 log(None).unwrap()
@@ -68,6 +60,9 @@ fn cat_file(args: &str) {
 fn commit(args: &str) {
     let oid = base::commmit(args);
     println!("{}", oid.unwrap());
+}
+fn checkout(args: &str) {
+    let res = base::checkout(args).unwrap();
 }
 
 fn log(args: Option<&str>) -> Result<(), Box<dyn std::error::Error>> {
