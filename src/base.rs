@@ -145,20 +145,20 @@ fn empty_current_directory() {
 
 pub(crate) fn commmit(message: &str) -> Result<String, Box<dyn Error>> {
     let mut commit = format!("tree {}\n", write_tree(Some("./test"))?);
-    if let Ok(oid) = data::get_head() {
+    if let Ok(oid) = data::get_ref("HEAD") {
         commit.push_str(&format!("parent {}\n", oid));
     }
     //message
     commit.push_str(&format!("\n{}\n", message));
     let oid = data::hash_object(commit.as_bytes(), Some("commit"))?;
-    data::set_head(&oid)?;
+    data::update_ref("HEAD",&oid)?;
     return Ok(oid);
 }
 
 pub(crate) fn checkout(oid: &str) -> Result<(), Box<dyn Error>> {
     let commit = get_commit(oid)?;
     read_tree(Some(&commit.tree));
-    let _ = data::set_head(oid);
+    let _ = data::update_ref("HEAD",oid);
     Ok(())
 }
 

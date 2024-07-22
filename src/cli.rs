@@ -71,7 +71,7 @@ fn tag(name: &str, oid: &str) {
 }
 
 fn log(args: Option<&str>) -> Result<(), Box<dyn std::error::Error>> {
-    let binding = data::get_head()?;
+    let binding = data::get_ref("HEAD")?;
     let oid = args.or(Some(&binding)).ok_or("oid is null")?;
     println!("oid: {}", oid);
     let commit = base::get_commit(&oid)?;

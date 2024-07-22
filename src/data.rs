@@ -9,14 +9,14 @@ pub fn init() -> Result<(), std::io::Error> {
     Ok(())
 }
 
-pub fn set_head(oid: &str) -> Result<(), std::io::Error> {
-    let path = format!("{}/HEAD", GIT_DIR);
+pub fn update_ref(_ref: &str,oid: &str) -> Result<(), std::io::Error> {
+    let path = format!("{}/{}", GIT_DIR,_ref);
     fs::write(path, oid)?;
     Ok(())
 }
-pub fn get_head() -> Result<String, std::io::Error> {
+pub fn get_ref(_ref: &str) -> Result<String, std::io::Error> {
     //检查是否存在HEAD
-    let path = format!("{}/HEAD", GIT_DIR);
+    let path = format!("{}/{}", GIT_DIR,_ref);
     let oid = fs::read_to_string(path)?.trim().to_string();
     Ok(oid)
 }
