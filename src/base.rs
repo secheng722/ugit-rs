@@ -162,6 +162,11 @@ pub(crate) fn checkout(oid: &str) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+pub(crate) fn create_tag(name:&str,oid:&str) {
+    !todo!()
+}
+
+
 #[derive(Debug)]
 pub(crate) struct Commit {
     tree: String,

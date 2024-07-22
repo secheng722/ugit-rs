@@ -15,6 +15,7 @@ pub fn parse_args() {
         "read-tree" => read_tree(&args[2]),
         "commit" => commit(&args[2]),
         "checkout" => checkout(&args[2]),
+        "tag" => tag(&args[2], &args[3]),
         "log" => {
             if args.len() < 3 {
                 log(None).unwrap()
@@ -63,6 +64,10 @@ fn commit(args: &str) {
 }
 fn checkout(args: &str) {
     let res = base::checkout(args).unwrap();
+}
+
+fn tag(name: &str, oid: &str) {
+    let _ = base::create_tag(name, oid);
 }
 
 fn log(args: Option<&str>) -> Result<(), Box<dyn std::error::Error>> {
