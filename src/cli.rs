@@ -7,8 +7,18 @@ pub fn parse_args() {
         std::process::exit(1);
     }
     let command = &args[1];
-    let oid = base::get_oid(&args[2]).unwrap();
-    let tagname = &args[3];
+    let oid = if args.len() > 2 {
+        match base::get_oid(&args[2]) {
+            Ok(oid) => oid,
+            Err(e) => {
+                eprintln!("{}", e);
+                std::process::exit(1);
+            }
+        }
+    } else {
+        "".to_string()
+    };
+    let tagname = if args.len() > 3 { &args[3] } else { "" };
     match command.as_str() {
         "init" => init(&args[1]),
         "hash-object" => hash_object(&oid),
@@ -54,7 +64,7 @@ fn hash_object(args: &str) {
 
 fn cat_file(args: &str) {
     // println!("{}", data::get_object(args, None));
-    match data::get_object(args, None) {
+    match data::get_object(args, Some("commit")) {
         Ok(oid) => println!("{}", oid),
         Err(e) => eprintln!("{}", e),
     }

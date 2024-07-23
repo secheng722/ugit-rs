@@ -25,7 +25,7 @@ pub fn get_ref(_ref: &str) -> Result<String, std::io::Error> {
     let path = format!("{}/{}", GIT_DIR, _ref);
     //这里需要判断吗
     // if Path::new(&path).is_file() { }
-    return Ok(fs::read_to_string(path)?.trim().to_string());
+    return Ok(fs::read_to_string(path)?.trim().to_owned());
 }
 
 pub fn hash_object(data: &[u8], type_: Option<&str>) -> Result<String, std::io::Error> {

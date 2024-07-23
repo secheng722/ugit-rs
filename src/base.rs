@@ -213,8 +213,21 @@ pub(crate) fn get_commit(oid: &str) -> Result<Commit, &'static str> {
 }
 
 pub fn get_oid(name: &str) -> Result<String, Box<dyn Error>> {
-    match data::get_ref(name) {
-        Ok(oid) => Ok(oid),
-        Err(_) => Ok(name.to_string()),
+    let refs_to_try = [
+        format!("refs/{}", name),
+        format!("refs/tags/{}", name),
+        format!("refs/heads/{}", name),
+    ];
+    //根据tag查找
+    for ref_ in refs_to_try.iter() {
+        if let Ok(oid) = data::get_ref(ref_) {
+            return Ok(oid);
+        }
     }
+    //判断oid是否合法
+    let is_hex = name.chars().all(|c| c.is_ascii_hexdigit());
+    if is_hex && (name.len() == 40 || name.len() == 64) {
+        return Ok(name.to_string());
+    }
+    Err("Not a valid name".into())
 }
