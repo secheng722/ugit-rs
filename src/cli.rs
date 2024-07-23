@@ -7,20 +7,22 @@ pub fn parse_args() {
         std::process::exit(1);
     }
     let command = &args[1];
+    let oid = base::get_oid(&args[2]).unwrap();
+    let tagname = &args[3];
     match command.as_str() {
         "init" => init(&args[1]),
-        "hash-object" => hash_object(&args[2]),
-        "cat-file" => cat_file(&args[2]),
-        "write-tree" => write_tree(&args[2]),
-        "read-tree" => read_tree(&args[2]),
-        "commit" => commit(&args[2]),
-        "checkout" => checkout(&args[2]),
-        "tag" => tag(&args[2], &args[3]),
+        "hash-object" => hash_object(&oid),
+        "cat-file" => cat_file(&oid),
+        "write-tree" => write_tree(&oid),
+        "read-tree" => read_tree(&oid),
+        "commit" => commit(&oid),
+        "checkout" => checkout(&oid),
+        "tag" => tag(&oid, &tagname),
         "log" => {
             if args.len() < 3 {
                 log(None).unwrap()
             } else {
-                log(Some(&args[2])).unwrap()
+                log(Some(&oid)).unwrap()
             }
         }
         _ => {

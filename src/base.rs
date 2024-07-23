@@ -151,23 +151,22 @@ pub(crate) fn commmit(message: &str) -> Result<String, Box<dyn Error>> {
     //message
     commit.push_str(&format!("\n{}\n", message));
     let oid = data::hash_object(commit.as_bytes(), Some("commit"))?;
-    data::update_ref("HEAD",&oid)?;
+    data::update_ref("HEAD", &oid)?;
     return Ok(oid);
 }
 
 pub(crate) fn checkout(oid: &str) -> Result<(), Box<dyn Error>> {
     let commit = get_commit(oid)?;
     read_tree(Some(&commit.tree));
-    let _ = data::update_ref("HEAD",oid);
+    let _ = data::update_ref("HEAD", oid);
     Ok(())
 }
 
-pub(crate) fn create_tag(name:&str,oid:&str) -> Result<(),Box<dyn Error>>{
-    let _ref = format!("refs/tags/{}",name);
-    data::update_ref(&_ref,oid)?;
+pub(crate) fn create_tag(name: &str, oid: &str) -> Result<(), Box<dyn Error>> {
+    let _ref = format!("refs/tags/{}", name);
+    data::update_ref(&_ref, oid)?;
     Ok(())
 }
-
 
 #[derive(Debug)]
 pub(crate) struct Commit {
@@ -211,4 +210,11 @@ pub(crate) fn get_commit(oid: &str) -> Result<Commit, &'static str> {
         parent,
         message,
     })
+}
+
+pub fn get_oid(name: &str) -> Result<String, Box<dyn Error>> {
+    match data::get_ref(name) {
+        Ok(oid) => Ok(oid),
+        Err(_) => Ok(name.to_string()),
+    }
 }
