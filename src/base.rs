@@ -162,8 +162,10 @@ pub(crate) fn checkout(oid: &str) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-pub(crate) fn create_tag(name:&str,oid:&str) {
-    !todo!()
+pub(crate) fn create_tag(name:&str,oid:&str) -> Result<(),Box<dyn Error>>{
+    let _ref = format!("refs/tags/{}",name);
+    data::update_ref(&_ref,oid)?;
+    Ok(())
 }
 
 

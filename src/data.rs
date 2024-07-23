@@ -1,6 +1,7 @@
 use sha1::{Digest, Sha1};
 use std::fs::{self, File};
 use std::io::Write;
+use std::path::Path;
 
 const GIT_DIR: &str = ".ugit";
 
@@ -9,16 +10,22 @@ pub fn init() -> Result<(), std::io::Error> {
     Ok(())
 }
 
-pub fn update_ref(_ref: &str,oid: &str) -> Result<(), std::io::Error> {
-    let path = format!("{}/{}", GIT_DIR,_ref);
+pub fn update_ref(_ref: &str, oid: &str) -> Result<(), std::io::Error> {
+    let path = format!("{}/{}", GIT_DIR, _ref);
+    let path = Path::new(&path);
+    //检查是否存在该目录
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
     fs::write(path, oid)?;
     Ok(())
 }
 pub fn get_ref(_ref: &str) -> Result<String, std::io::Error> {
     //检查是否存在HEAD
-    let path = format!("{}/{}", GIT_DIR,_ref);
-    let oid = fs::read_to_string(path)?.trim().to_string();
-    Ok(oid)
+    let path = format!("{}/{}", GIT_DIR, _ref);
+    //这里需要判断吗
+    // if Path::new(&path).is_file() { }
+    return Ok(fs::read_to_string(path)?.trim().to_string());
 }
 
 pub fn hash_object(data: &[u8], type_: Option<&str>) -> Result<String, std::io::Error> {
