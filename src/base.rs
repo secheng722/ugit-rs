@@ -1,4 +1,4 @@
-use std::{ffi::OsString, fs::Metadata, path::Path};
+use std::{ffi::OsString, fmt::format, fs::Metadata, path::Path};
 
 use crate::data;
 
@@ -94,14 +94,11 @@ pub(crate) fn get_tree(
     oid: Option<&str>,
     base_path: Option<&str>,
 ) -> std::collections::HashMap<String, String> {
-    let base_path = match base_path {
-        Some(p) => p,
-        None => "",
-    };
+    let base_path = base_path.unwrap_or_default();
     let mut map = std::collections::HashMap::new();
     iter_tree_entries(oid).for_each(|(type_, oid, name)| {
-        assert_eq!(name.contains('/'), false);
-        assert_eq!(name != ".." && name != ".", true);
+        assert!(!name.contains('/'));
+        assert!(name != ".." && name != ".");
         let path = format!("{}/{}", base_path, name);
         if type_ == "blob" {
             map.insert(path, oid);
@@ -112,7 +109,7 @@ pub(crate) fn get_tree(
             panic!("Invalid tree entry")
         }
     });
-    return map;
+    map
 }
 
 pub(crate) fn read_tree(tree_oid: Option<&str>) {
@@ -152,7 +149,7 @@ pub(crate) fn commmit(message: &str) -> Result<String, Box<dyn Error>> {
     commit.push_str(&format!("\n{}\n", message));
     let oid = data::hash_object(commit.as_bytes(), Some("commit"))?;
     data::update_ref("HEAD", &oid)?;
-    return Ok(oid);
+    Ok(oid)
 }
 
 pub(crate) fn checkout(oid: &str) -> Result<(), Box<dyn Error>> {
@@ -177,7 +174,7 @@ pub(crate) struct Commit {
 
 pub(crate) fn get_commit(oid: &str) -> Result<Commit, &'static str> {
     let commit = data::get_object(oid, Some("commit")).map_err(|_| "Failed to read commit")?;
-    let parts = commit.split("\n").collect::<Vec<&str>>();
+    let parts: Vec<&str> = commit.split('\n').collect();
     let mut tree = None;
     let mut parent = None;
     let mut message = String::new();
@@ -190,7 +187,7 @@ pub(crate) fn get_commit(oid: &str) -> Result<Commit, &'static str> {
         }
 
         if parsing_headers {
-            if let Some((key, value)) = line.split_once(" ") {
+            if let Some((key, value)) = line.split_once(' ') {
                 match key {
                     "tree" => tree = Some(value.to_string()),
                     "parent" => parent = Some(value.to_string()),
@@ -212,8 +209,13 @@ pub(crate) fn get_commit(oid: &str) -> Result<Commit, &'static str> {
     })
 }
 
-pub fn get_oid(name: &str) -> Result<String, Box<dyn Error>> {
+pub fn get_oid(mut name: String) -> Result<String, Box<dyn Error>> {
+    if name == "@" {
+        name = "HEAD".to_string();
+    }
+
     let refs_to_try = [
+        format!("{}", name),
         format!("refs/{}", name),
         format!("refs/tags/{}", name),
         format!("refs/heads/{}", name),
@@ -227,7 +229,7 @@ pub fn get_oid(name: &str) -> Result<String, Box<dyn Error>> {
     //判断oid是否合法
     let is_hex = name.chars().all(|c| c.is_ascii_hexdigit());
     if is_hex && (name.len() == 40 || name.len() == 64) {
-        return Ok(name.to_string());
+        return Ok(name);
     }
     Err("Not a valid name".into())
 }

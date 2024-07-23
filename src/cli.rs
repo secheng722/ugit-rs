@@ -7,18 +7,15 @@ pub fn parse_args() {
         std::process::exit(1);
     }
     let command = &args[1];
-    let oid = if args.len() > 2 {
-        match base::get_oid(&args[2]) {
-            Ok(oid) => oid,
-            Err(e) => {
-                eprintln!("{}", e);
-                std::process::exit(1);
-            }
+    let name = args.get(2).cloned().unwrap_or("@".to_string());
+    let oid = match base::get_oid(name) {
+        Ok(oid) => oid,
+        Err(e) => {
+            eprintln!("{}", e);
+            std::process::exit(1);
         }
-    } else {
-        "".to_string()
     };
-    let tagname = if args.len() > 3 { &args[3] } else { "" };
+    let tagname = args.get(3).cloned().unwrap_or_default();
     match command.as_str() {
         "init" => init(&args[1]),
         "hash-object" => hash_object(&oid),
@@ -28,13 +25,7 @@ pub fn parse_args() {
         "commit" => commit(&oid),
         "checkout" => checkout(&oid),
         "tag" => tag(&oid, &tagname),
-        "log" => {
-            if args.len() < 3 {
-                log(None).unwrap()
-            } else {
-                log(Some(&oid)).unwrap()
-            }
-        }
+        "log" => log(&oid).unwrap(),
         _ => {
             eprintln!("uGit: invalid command {}", command);
             std::process::exit(1);
@@ -82,11 +73,8 @@ fn tag(name: &str, oid: &str) {
     let _ = base::create_tag(name, oid);
 }
 
-fn log(args: Option<&str>) -> Result<(), Box<dyn std::error::Error>> {
-    let binding = data::get_ref("HEAD")?;
-    let oid = args.or(Some(&binding)).ok_or("oid is null")?;
-    println!("oid: {}", oid);
-    let commit = base::get_commit(&oid)?;
+fn log(args: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let commit = base::get_commit(&args)?;
     println!("{:?}", commit);
     Ok(())
 }
