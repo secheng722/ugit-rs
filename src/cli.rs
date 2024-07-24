@@ -17,7 +17,7 @@ pub fn parse_args() {
     };
     let tagname = args.get(3).cloned().unwrap_or_default();
     match command.as_str() {
-        "init" => init(&args[1]),
+        "init" => init(),
         "hash-object" => hash_object(&oid),
         "cat-file" => cat_file(&oid),
         "write-tree" => write_tree(&oid),
@@ -25,6 +25,7 @@ pub fn parse_args() {
         "commit" => commit(&oid),
         "checkout" => checkout(&oid),
         "tag" => tag(&oid, &tagname),
+        "k" => k(),
         "log" => log(&oid).unwrap(),
         _ => {
             eprintln!("uGit: invalid command {}", command);
@@ -33,7 +34,7 @@ pub fn parse_args() {
     }
 }
 
-pub fn init(args: &str) {
+pub fn init() {
     let _ = data::init();
 }
 
@@ -71,6 +72,12 @@ fn checkout(args: &str) {
 
 fn tag(name: &str, oid: &str) {
     let _ = base::create_tag(name, oid);
+}
+
+fn k() {
+    for (ref_name, oid) in data::iter_refs().unwrap() {
+        println!("{} {}", oid, ref_name);
+    }
 }
 
 fn log(args: &str) -> Result<(), Box<dyn std::error::Error>> {

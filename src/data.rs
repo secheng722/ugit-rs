@@ -2,6 +2,7 @@ use sha1::{Digest, Sha1};
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::Path;
+use walkdir::WalkDir;
 
 const GIT_DIR: &str = ".ugit";
 
@@ -20,12 +21,37 @@ pub fn update_ref(_ref: &str, oid: &str) -> Result<(), std::io::Error> {
     fs::write(path, oid)?;
     Ok(())
 }
+
 pub fn get_ref(_ref: &str) -> Result<String, std::io::Error> {
     //检查是否存在HEAD
     let path = format!("{}/{}", GIT_DIR, _ref);
     //这里需要判断吗
     // if Path::new(&path).is_file() { }
     return Ok(fs::read_to_string(path)?.trim().to_owned());
+}
+
+pub fn iter_refs() -> Result<Vec<(String, String)>, std::io::Error> {
+    let mut ref_names = vec!["HEAD".to_string()];
+    for entry in WalkDir::new(format!("{}/refs/", GIT_DIR))
+        .into_iter()
+        .flatten()
+    {
+        if entry.path().is_file() {
+            let ref_name = entry.path().strip_prefix(GIT_DIR).unwrap();
+            ref_names.push(ref_name.as_os_str().to_str().unwrap().to_string());
+        }
+    }
+    let mut res = Vec::new();
+    for ref_name in ref_names {
+        let oid = get_ref(&ref_name)?;
+        res.push((ref_name, oid));
+    }
+    Ok(res)
+}
+
+#[test]
+pub fn test_iter_refs() {
+    iter_refs().unwrap();
 }
 
 pub fn hash_object(data: &[u8], type_: Option<&str>) -> Result<String, std::io::Error> {
@@ -36,13 +62,14 @@ pub fn hash_object(data: &[u8], type_: Option<&str>) -> Result<String, std::io::
     let path = format!("{}/objects/{}", GIT_DIR, oid_hex);
 
     fs::create_dir_all(format!("{}/objects", GIT_DIR))?;
-    let mut file = File::create(&path)?;
+    let mut file = File::create(path)?;
     file.write_all(&obj)?;
     Ok(oid_hex)
 }
+
 pub fn get_object(oid: &str, expected: Option<&str>) -> Result<String, std::io::Error> {
     let path = format!("{}/objects/{}", GIT_DIR, oid);
-    let data = fs::read(&path)?;
+    let data = fs::read(path)?;
     let mut parts = data.splitn(2, |&x| x == b'\x00');
     let type_ = parts.next().ok_or_else(|| {
         std::io::Error::new(std::io::ErrorKind::InvalidData, "Invalid object format")
